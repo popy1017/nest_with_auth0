@@ -12,16 +12,12 @@ import { ItemsService } from './items.service';
 import { CreateItemDto } from './dto/create-item.dto';
 import { UpdateItemDto } from './dto/update-item.dto';
 import { AuthGuard } from '@nestjs/passport';
+import { PermissionsGuard } from 'src/permissions/permissions.guard';
+import { Permissions } from 'src/permissions/permissions.decorator';
 
 @Controller('items')
 export class ItemsController {
   constructor(private readonly itemsService: ItemsService) {}
-
-  @Post()
-  @UseGuards(AuthGuard('jwt'))
-  create(@Body() createItemDto: CreateItemDto) {
-    return this.itemsService.create(createItemDto);
-  }
 
   @Get()
   findAll() {
@@ -33,14 +29,23 @@ export class ItemsController {
     return this.itemsService.findOne(id);
   }
 
+  @Post()
+  @UseGuards(AuthGuard('jwt'), PermissionsGuard)
+  @Permissions('create:items')
+  create(@Body() createItemDto: CreateItemDto) {
+    return this.itemsService.create(createItemDto);
+  }
+
   @Patch(':id')
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(AuthGuard('jwt'), PermissionsGuard)
+  @Permissions('update:items')
   update(@Param('id') id: string, @Body() updateItemDto: UpdateItemDto) {
     return this.itemsService.update(id, updateItemDto);
   }
 
   @Delete(':id')
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(AuthGuard('jwt'), PermissionsGuard)
+  @Permissions('delete:items')
   remove(@Param('id') id: string) {
     return this.itemsService.remove(id);
   }
